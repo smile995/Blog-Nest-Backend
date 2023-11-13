@@ -7,7 +7,7 @@ const port=process.env.PORT || 5000;
 // middlewere to access data for different user
 app.use(cors())
 app.use(express.json())
-// connct to mongodb
+
 
 
 
@@ -47,14 +47,12 @@ async function run() {
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
-    // Ensures that the client will close when you finish/error
-    // await client.close();
+  
   }
 }
 run().catch(console.dir);
 
 
-// Main requirement stared from here.
 
 app.get('/',(req,res)=>{
     res.send('Your server is running')
