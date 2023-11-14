@@ -34,6 +34,7 @@ async function run() {
         const result=await cursor.toArray()
         res.send(result)
     })
+   
     const database = client.db("insertDB");
     const blogCollection = database.collection("blogs");
     // <create> data
