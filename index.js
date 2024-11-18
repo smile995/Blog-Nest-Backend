@@ -1,63 +1,69 @@
-const express = require('express')
+const express = require('express');
 const cors = require('cors');
-const app = express()
-const { MongoClient, ServerApiVersion } = require('mongodb');
-const port=process.env.PORT || 5000;
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+require('dotenv').config(); // Ensure this is at the top to load environment variables
 
-// middlewere to access data for different user
-app.use(cors())
-app.use(express.json())
+const app = express();
+const port = process.env.PORT || 3000;
 
+// Middleware
+app.use(express.json());
+app.use(cors());
 
+// MongoDB connection URI with environment variables
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.password}@cluster0.lc6lor4.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
+console.log("MongoDB DB_USER:", process.env.DB_USER);
+console.log("MongoDB Password:", process.env.password);
 
-
-
-
-const uri = "mongodb+srv://blogdb:wh0mfST8p0cMsRD7@cluster0.lc6lor4.mongodb.net/?retryWrites=true&w=majority";
-
-// Create a MongoClient with a MongoClientOptions object to set the Stable API version
+// Create MongoClient with server API options
 const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
     strict: true,
     deprecationErrors: true,
-  }
+  },
 });
 
 async function run() {
   try {
-    // Connect the client to the server	(optional starting in v4.7)
-    // await client.connect();
-    // getting data from mongodb <READ>
-    app.get('/blog',async(req,res)=>{
-        const cursor = blogCollection.find();
-        const result=await cursor.toArray()
-        res.send(result)
+    // create database and collection
+    const database = client.db("Blog_Nest")
+    const blogCollection = database.collection("blogs")
+
+
+    // posting data into database
+    app.post("/add-blog", async (req, res) => {
+      const blog = req.body;
+      const result = await blogCollection.insertOne(blog)
+      res.send(result).status(200)
     })
-   
-    const database = client.db("insertDB");
-    const blogCollection = database.collection("blogs");
-    // <create> data
-    app.post('/blog',async(req,res)=>{
-        const blog=req.body
-        console.log(blog);
-        const result = await blogCollection.insertOne(blog);
-        res.send(result)
+    // getting all data from database
+    app.get("/blogs", async (req, res) => {
+      const result = await blogCollection.find().toArray()
+      res.send(result)
     })
-    // Send a ping to confirm a successful connection
-    // await client.db("admin").command({ ping: 1 });
-    // console.log("Pinged your deployment. You successfully connected to MongoDB!");
-  } finally {
-  
+
+    // finding single data from database by id
+    app.get("/blog/:id", async (req, res) => {
+      const id = req.params.id;
+      const query= {_id: new ObjectId(id)};
+      const result= await blogCollection.findOne(query);
+      res.send(result)
+    })
+
+
+    console.log("Successfully connected to MongoDB!");
+  } catch (error) {
+    console.error("MongoDB connection failed:", error);
   }
 }
-run().catch(console.dir);
+run().catch(console.dir); // Run the connection
 
+// Initial server response
+app.get('/', (req, res) => {
+  res.send('Blogs Nest coming soon...');
+});
 
-
-app.get('/',(req,res)=>{
-    res.send('Your server is running')
-})
-app.listen(port,()=>{
-    console.log(`server running on ${port}`);
-})
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
+});
