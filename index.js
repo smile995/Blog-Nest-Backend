@@ -12,8 +12,7 @@ app.use(cors());
 
 // MongoDB connection URI with environment variables
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.password}@cluster0.lc6lor4.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
-console.log("MongoDB DB_USER:", process.env.DB_USER);
-console.log("MongoDB Password:", process.env.password);
+
 
 // Create MongoClient with server API options
 const client = new MongoClient(uri, {
@@ -46,9 +45,19 @@ async function run() {
     // finding single data from database by id
     app.get("/blog/:id", async (req, res) => {
       const id = req.params.id;
-      const query= {_id: new ObjectId(id)};
-      const result= await blogCollection.findOne(query);
+      const query = { _id: new ObjectId(id) };
+      const result = await blogCollection.findOne(query);
       res.send(result)
+    })
+
+    // wishlist 
+
+    app.get("/wishlist/:bookId", async (req, res) => {
+      let allBooked = [];
+      const id = req.params.bookId
+      allBooked.push(id)
+      console.log(allBooked);
+      
     })
 
 
